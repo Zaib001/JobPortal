@@ -34,7 +34,10 @@ const Salaries = () => {
     currency: "USD",
     month: "",
     remarks: "",
+    mode: "month",
+    customFields: {}
   });
+  const [newField, setNewField] = useState({ key: "", value: "" });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,6 +51,7 @@ const Salaries = () => {
     try {
       setLoading(true);
       const data = await fetchSalaries();
+      console.log(data)
       setSalaries(data || []);
     } catch {
       toast.error("Failed to fetch salaries.");
@@ -76,7 +80,10 @@ const Salaries = () => {
       currency: "USD",
       month: "",
       remarks: "",
+      mode: "month",
+      customFields: {}
     });
+    setNewField({ key: "", value: "" });
     await fetchUsers();
     setIsModalOpen(true);
   };
@@ -93,7 +100,10 @@ const Salaries = () => {
       currency: salary.currency,
       month: salary.month,
       remarks: salary.remarks || "",
+      mode: "month",
+      customFields: salary.customFields || {}
     });
+    setNewField({ key: "", value: "" });
     setIsModalOpen(true);
   };
 
@@ -111,6 +121,8 @@ const Salaries = () => {
         currency: form.currency,
         month: form.month,
         remarks: form.remarks,
+        mode: form.mode,
+        customFields: form.customFields
       };
 
       if (mode === "edit") {
@@ -149,8 +161,20 @@ const Salaries = () => {
     }
   };
 
+  const addCustomField = () => {
+    if (!newField.key.trim()) return;
+    setForm((prev) => ({
+      ...prev,
+      customFields: { ...prev.customFields, [newField.key]: newField.value }
+    }));
+    setNewField({ key: "", value: "" });
+  };
+
   const filteredSalaries = salaries.filter((s) =>
     s.userId?.name?.toLowerCase().includes(search.toLowerCase())
+  );
+  const customKeys = Array.from(
+    new Set(salaries.flatMap((s) => s.customFields ? Object.keys(s.customFields) : []))
   );
 
   return (
@@ -202,6 +226,7 @@ const Salaries = () => {
             "Month",
             "Currency",
             "Remarks",
+            ...customKeys.map(k => k.charAt(0).toUpperCase() + k.slice(1)), // Custom headers
             "Actions",
           ]}
           rows={filteredSalaries.map((s) => [
@@ -216,34 +241,21 @@ const Salaries = () => {
             s.month,
             s.currency,
             s.remarks,
+            ...customKeys.map((key) => s.customFields?.[key] || "-"), // Custom field values
             <div className="flex gap-3">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                className="text-indigo-600"
-                onClick={() => openEditModal(s)}
-                title="Edit"
-              >
+              <motion.button whileHover={{ scale: 1.05 }} className="text-indigo-600" onClick={() => openEditModal(s)} title="Edit">
                 <FaEdit />
               </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                className="text-green-600"
-                onClick={() => handleSendSlip(s._id)}
-                title="Send Slip"
-              >
+              <motion.button whileHover={{ scale: 1.05 }} className="text-green-600" onClick={() => handleSendSlip(s._id)} title="Send Slip">
                 <FaPaperPlane />
               </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                className="text-red-600"
-                onClick={() => handleDelete(s._id)}
-                title="Delete"
-              >
+              <motion.button whileHover={{ scale: 1.05 }} className="text-red-600" onClick={() => handleDelete(s._id)} title="Delete">
                 <FaTrash />
               </motion.button>
             </div>,
           ])}
         />
+
       )}
 
       {isModalOpen && (
@@ -269,10 +281,8 @@ const Salaries = () => {
                 </div>
               )}
               <label className="block text-sm font-medium">Base Salary</label>
-
               <input type="number" placeholder="Base Salary" value={form.base} onChange={(e) => setForm({ ...form, base: Number(e.target.value) })} className="w-full border rounded px-3 py-2 mt-1" />
               <label className="block text-sm font-medium">Bonus</label>
-
               <input type="number" placeholder="Bonus" value={form.bonus} onChange={(e) => setForm({ ...form, bonus: Number(e.target.value) })} className="w-full border rounded px-3 py-2 mt-1" />
               <select value={form.isBonusRecurring} onChange={(e) => setForm({ ...form, isBonusRecurring: e.target.value === 'true' })} className="w-full border rounded px-3 py-2 mt-1">
                 <option value="false">One-time Bonus</option>
@@ -285,6 +295,69 @@ const Salaries = () => {
               </select>
               <input type="month" placeholder="Month" value={form.month} onChange={(e) => setForm({ ...form, month: e.target.value })} className="w-full border rounded px-3 py-2 mt-1" />
               <textarea placeholder="Remarks" value={form.remarks} onChange={(e) => setForm({ ...form, remarks: e.target.value })} rows={2} className="w-full border rounded px-3 py-2 mt-1" />
+              <div className="flex items-center gap-2">
+                <label className="text-sm">Mode:</label>
+                <select value={form.mode} onChange={(e) => setForm({ ...form, mode: e.target.value })} className="border px-2 py-1 rounded">
+                  <option value="month">Month</option>
+                  <option value="year">Year</option>
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block font-medium text-sm mb-2">Custom Fields</label>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    placeholder="Field name"
+                    value={newField.key}
+                    onChange={(e) => setNewField({ ...newField, key: e.target.value })}
+                    className="border p-2 rounded w-1/2"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Field value"
+                    value={newField.value}
+                    onChange={(e) => setNewField({ ...newField, value: e.target.value })}
+                    className="border p-2 rounded w-1/2"
+                  />
+                  <button
+                    type="button"
+                    className="bg-gray-200 px-4 rounded"
+                    onClick={() => {
+                      if (!newField.key.trim()) return;
+                      setForm((prev) => ({
+                        ...prev,
+                        customFields: { ...prev.customFields, [newField.key]: newField.value },
+                      }));
+                      setNewField({ key: "", value: "" });
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* Show all added custom fields */}
+                {form.customFields && typeof form.customFields === "object" && (
+                  Object.entries(form.customFields).map(([k, v]) => (
+                    <div key={k} className="text-sm flex justify-between items-center border px-2 py-1 rounded mb-1">
+                      <span>{k}: {v}</span>
+                      <button
+                        type="button"
+                        className="text-red-500 text-xs"
+                        onClick={() =>
+                          setForm((prev) => {
+                            const updated = { ...prev.customFields };
+                            delete updated[k];
+                            return { ...prev, customFields: updated };
+                          })
+                        }
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))
+                )}
+
+              </div>
               <div className="flex justify-end gap-2">
                 <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancel</button>
                 <button onClick={handleSave} className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Save</button>

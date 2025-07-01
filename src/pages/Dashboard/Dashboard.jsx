@@ -25,6 +25,7 @@ import SideBarHeader from "../../components/SideBarHeader";
 import CandidateMessages from './Candidate/Messages';
 import AdminDocumentPanel from "./Admin/AdminDocumentPanel";
 import DocumentUploader from "./Recruiter/DocumentUploader";
+import Timesheets from "./Admin/Timesheets";
 
 const Dashboard = () => {
   const { role } = useParams();
@@ -37,6 +38,7 @@ const Dashboard = () => {
         <Route path="submissions" element={<SubmissionsAdmin />} />
         <Route path="pto" element={<PTORequests />} />
         <Route path="salaries" element={<Salaries />} />
+        <Route path="timesheets" element={<Timesheets />} />
         <Route path="reports" element={<Reports />} />
         <Route path="messages" element={<AdminMessages />} />
         <Route path="document" element={<AdminDocumentPanel />} />

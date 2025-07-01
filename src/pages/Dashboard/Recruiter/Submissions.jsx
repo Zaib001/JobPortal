@@ -227,7 +227,7 @@ const Submissions = () => {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <input type="text" placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} className="border px-4 py-2 rounded" />
         <div className="flex gap-2">
-          <input type="file" accept=".xlsx,.xls" onChange={handleExcelUpload} className="hidden" id="excelUpload" />
+          <input type="file" accept=".csv,.xlsx,.xls" onChange={handleExcelUpload} className="hidden" id="excelUpload" />
           <label htmlFor="excelUpload" className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded cursor-pointer flex items-center gap-1">
             <FaFileUpload /> Excel Upload
           </label>

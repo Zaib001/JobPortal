@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const UserModal = ({ user, onClose, onSave, fields, labels }) => {
+const UserModal = ({ user, onClose, onSave, fields, labels, renderCustomField }) => {
   const [form, setForm] = useState({});
   const [customFields, setCustomFields] = useState({});
   const [newFieldKey, setNewFieldKey] = useState("");
@@ -11,14 +11,6 @@ const UserModal = ({ user, onClose, onSave, fields, labels }) => {
       setCustomFields(user.customFields || {});
     }
   }, [user]);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleCustomChange = (e) => {
-    setCustomFields({ ...customFields, [e.target.name]: e.target.value });
-  };
 
   const addCustomField = () => {
     const key = newFieldKey.trim();
@@ -33,27 +25,39 @@ const UserModal = ({ user, onClose, onSave, fields, labels }) => {
     setCustomFields(updated);
   };
 
+  const handleCustomChange = (e) => {
+    setCustomFields({ ...customFields, [e.target.name]: e.target.value });
+  };
+
   const handleSubmit = () => {
     const fullData = { ...form, customFields };
     onSave(fullData);
   };
 
   return (
-    <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
-      <div className="bg-white p-6 rounded-xl w-full max-w-lg shadow-lg space-y-4">
-        <h2 className="text-xl font-bold">{form?._id ? "Edit" : "Add"} Candidate</h2>
+    <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center px-4">
+      <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-lg p-6 space-y-4">
+        <h2 className="text-xl font-bold sticky top-0 bg-white z-10 pb-2">
+          {form?._id ? "Edit" : "Add"} Candidate
+        </h2>
 
-        {/* Standard Fields */}
+        {/* Dynamic Form Fields */}
         {fields.map((field) => (
-          <input
-            key={field}
-            name={field}
-            type={field === "password" ? "password" : "text"}
-            value={form[field] || ""}
-            onChange={handleChange}
-            placeholder={labels?.[field] || field}
-            className="w-full px-4 py-2 border rounded bg-gray-100"
-          />
+          <div key={field} className="mb-3">
+            <label className="block text-sm font-medium mb-1">{labels?.[field] || field}</label>
+            {renderCustomField && renderCustomField(field, form[field], (key, val) => setForm({ ...form, [key]: val })) ? (
+              renderCustomField(field, form[field], (key, val) => setForm({ ...form, [key]: val }))
+            ) : (
+              <input
+                name={field}
+                type={field === "password" ? "password" : field === "dob" ? "date" : "text"}
+                value={form[field] || ""}
+                onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+                placeholder={labels?.[field] || field}
+                className="w-full px-4 py-2 border rounded bg-gray-100"
+              />
+            )}
+          </div>
         ))}
 
         {/* Custom Fields */}
@@ -97,7 +101,7 @@ const UserModal = ({ user, onClose, onSave, fields, labels }) => {
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-2 pt-4">
+        <div className="flex justify-end gap-2 pt-4 sticky bottom-0 bg-white pb-0">
           <button onClick={onClose} className="text-gray-500 hover:underline">Cancel</button>
           <button onClick={handleSubmit} className="bg-indigo-600 text-white px-4 py-2 rounded">
             Save

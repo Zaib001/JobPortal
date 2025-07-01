@@ -23,6 +23,7 @@ const Sidebar = () => {
     { name: "Submissions", path: "submissions", icon: <FaClipboardList /> },
     { name: "PTO Requests", path: "pto", icon: <FaUserClock /> },
     { name: "Salaries", path: "salaries", icon: <FaUserTie /> },
+    { name: "Timesheets", path: "timesheets", icon: <FaUserTie /> },
     { name: "All Documents", path: "document", icon: <FaFileAlt /> },
     { name: "Reports", path: "reports", icon: <FaChartBar /> },
     { name: "Messages", path: "messages", icon: <FaComments /> }

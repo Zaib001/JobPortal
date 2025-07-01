@@ -9,13 +9,12 @@ const Timesheets = () => {
   const [form, setForm] = useState({ from: "", to: "", hours: "" });
   const [timesheets, setTimesheets] = useState([]);
   const [loading, setLoading] = useState(false);
-  const hourlyRate = 25;
 
-  // ✅ Fetch timesheets on load
   const fetchTimesheets = async () => {
     setLoading(true);
     try {
       const res = await API.get("/api/recruiter/timesheets");
+      console.log(res)
       setTimesheets(res.data || []);
     } catch (err) {
       toast.error("Failed to fetch timesheets");
@@ -107,12 +106,11 @@ const Timesheets = () => {
           <p className="text-gray-500">Loading...</p>
         ) : (
           <Table
-            headers={["Week Start", "Week End", "Hours", "Pay", "Status"]}
+            headers={["Week Start", "Week End", "Hours", "Status"]}
             rows={timesheets.map((t) => [
               new Date(t.from).toLocaleDateString(),
               new Date(t.to).toLocaleDateString(),
               `${t.hours} hrs`,
-              `$${t.totalPay?.toFixed(2) || 0}`,
               <StatusBadge status={t.status} />,
             ])}
           />

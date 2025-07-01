@@ -7,6 +7,7 @@ import {
   FaEye,
   FaEdit,
   FaTrash,
+  FaFileImport,
 } from "react-icons/fa";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -47,55 +48,55 @@ const Submissions = () => {
   };
 
 
-const handleExportCSV = async () => {
-  try {
-    toast.loading("Exporting CSV...");
-    const res = await API.get("/api/admin/submissions/export/csv", {
-      responseType: "blob",
-    });
+  const handleExportCSV = async () => {
+    try {
+      toast.loading("Exporting CSV...");
+      const res = await API.get("/api/admin/submissions/export/csv", {
+        responseType: "blob",
+      });
 
-    const blob = new Blob([res.data], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
+      const blob = new Blob([res.data], { type: "text/csv" });
+      const url = window.URL.createObjectURL(blob);
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "submissions.csv");
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "submissions.csv");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
 
-    toast.dismiss();
-    toast.success("CSV exported successfully!");
-  } catch (error) {
-    toast.dismiss();
-    toast.error("Failed to export CSV");
-  }
-};
+      toast.dismiss();
+      toast.success("CSV exported successfully!");
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Failed to export CSV");
+    }
+  };
 
-const handleExportPDF = async () => {
-  try {
-    toast.loading("Exporting PDF...");
-    const res = await API.get("/api/admin/submissions/export/pdf", {
-      responseType: "blob",
-    });
+  const handleExportPDF = async () => {
+    try {
+      toast.loading("Exporting PDF...");
+      const res = await API.get("/api/admin/submissions/export/pdf", {
+        responseType: "blob",
+      });
 
-    const blob = new Blob([res.data], { type: "application/pdf" });
-    const url = window.URL.createObjectURL(blob);
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
 
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "submissions.pdf");
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "submissions.pdf");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
 
-    toast.dismiss();
-    toast.success("PDF exported successfully!");
-  } catch (error) {
-    toast.dismiss();
-    toast.error("Failed to export PDF");
-  }
-};
+      toast.dismiss();
+      toast.success("PDF exported successfully!");
+    } catch (error) {
+      toast.dismiss();
+      toast.error("Failed to export PDF");
+    }
+  };
 
 
   const handleDelete = async (id) => {
@@ -136,6 +137,25 @@ const handleExportPDF = async () => {
     const matchesEnd = endDate ? submissionDate <= new Date(endDate) : true;
     return matchesSearch && matchesStart && matchesEnd;
   });
+  const handleUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      toast.loading("Importing submissions...");
+      await API.post("/api/admin/submissions/import", formData);
+      toast.dismiss();
+      toast.success("Imported successfully!");
+      fetchSubmissions();
+    } catch (err) {
+      toast.dismiss();
+      toast.error("Failed to import");
+    }
+  };
+
 
   return (
     <div className="space-y-6">
@@ -178,6 +198,19 @@ const handleExportPDF = async () => {
           >
             <FaDownload /> PDF
           </button>
+          <input
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            onChange={handleUpload}
+            className="hidden"
+            id="excel-upload"
+          />
+          <label
+            htmlFor="excel-upload"
+            className="flex items-center gap-2 bg-indigo-600 text-white px-3 py-2 rounded hover:bg-indigo-700 cursor-pointer"
+          >
+            <FaFileImport /> Upload Excel
+          </label>
         </div>
       </div>
 

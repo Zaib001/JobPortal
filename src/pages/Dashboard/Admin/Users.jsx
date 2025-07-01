@@ -192,7 +192,26 @@ const Users = () => {
             ptoLimit: "PTO Limit",
             workingDays: "Working Days",
           }}
+          renderCustomField={(field, value, onChange) => {
+            if (field === "role") {
+              return (
+                <select
+                  value={value}
+                  onChange={(e) => onChange(field, e.target.value)}
+                  className="w-full border rounded px-3 py-2 bg-gray-100"
+                >
+                  <option value="">Select Role</option>
+                  <option value="admin">Admin</option>
+                  <option value="recruiter">Recruiter</option>
+                  <option value="candidate">Candidate</option>
+                </select>
+              );
+            }
+            return null;
+          }}
         />
+
+
       )}
 
       {showPermissionModal && selectedUser && (
