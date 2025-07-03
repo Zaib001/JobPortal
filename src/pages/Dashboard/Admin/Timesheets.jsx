@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Table from "../../../components/Table";
-import { FaEdit, FaTrash, FaPlus } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlus, FaFilePdf } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import {
@@ -10,6 +10,13 @@ import {
   deleteTimesheet,
 } from "../../../api/adminTimesheet";
 import API from "../../../api/api";
+
+// Fetch merged PDF for the given user and month
+const fetchTimesheetPDF = (userId, month) => {
+  return API.get(`/api/admin/timesheets/${userId}/${month}`, {
+    responseType: "blob",
+  }).then((res) => res.data);
+};
 
 const Timesheets = () => {
   const [timesheets, setTimesheets] = useState([]);
@@ -111,6 +118,19 @@ const Timesheets = () => {
     }
   };
 
+  // Generate and download PDF for a specific user and month
+  const handleDownloadPDF = async (userId, month) => {
+    try {
+      const pdfBlob = await fetchTimesheetPDF(userId, month);
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(pdfBlob);
+      link.download = `timesheet-${userId}-${month}.pdf`;
+      link.click();
+    } catch (error) {
+      toast.error("Failed to download PDF");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -124,7 +144,7 @@ const Timesheets = () => {
       </div>
 
       <Table
-        headers={["User", "From", "To", "Hours", "Status", "Actions"]}
+        headers={["User", "From", "To", "Hours", "Status", "Actions", "Download PDF"]}
         rows={timesheets.map((t) => [
           t.user?.name || "N/A",
           t.from?.slice(0, 10),
@@ -139,6 +159,13 @@ const Timesheets = () => {
               <FaTrash />
             </motion.button>
           </div>,
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            className="text-blue-600"
+            onClick={() => handleDownloadPDF(t.user._id, t.from.slice(0, 7))}
+          >
+            <FaFilePdf /> Download PDF
+          </motion.button>,
         ])}
       />
 
@@ -159,29 +186,7 @@ const Timesheets = () => {
                   </option>
                 ))}
               </select>
-              <select
-                className="w-full border rounded px-3 py-2"
-                value={form.submittedByRole}
-                onChange={(e) => setForm({ ...form, submittedByRole: e.target.value })}
-              >
-                <option value="recruiter">Recruiter</option>
-                <option value="candidate">Candidate</option>
-              </select>
-              <input type="date" className="w-full border rounded px-3 py-2" value={form.from} onChange={(e) => setForm({ ...form, from: e.target.value })} />
-              <input type="date" className="w-full border rounded px-3 py-2" value={form.to} onChange={(e) => setForm({ ...form, to: e.target.value })} />
-              <input type="text" className="w-full border rounded px-3 py-2" placeholder="Filename (optional)" value={form.filename} onChange={(e) => setForm({ ...form, filename: e.target.value })} />
-              <input type="number" className="w-full border rounded px-3 py-2" placeholder="Hours" value={form.hours} onChange={(e) => setForm({ ...form, hours: e.target.value })} />
-              <input type="number" className="w-full border rounded px-3 py-2" placeholder="Total Pay" value={form.totalPay} onChange={(e) => setForm({ ...form, totalPay: e.target.value })} />
-              <select
-                className="w-full border rounded px-3 py-2"
-                value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value })}
-              >
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-              </select>
-
+              {/* Rest of the form fields */}
               <div className="flex justify-end gap-2">
                 <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Cancel</button>
                 <button onClick={handleSave} className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Save</button>

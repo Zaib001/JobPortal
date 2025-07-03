@@ -179,7 +179,18 @@ const Users = () => {
           user={selectedUser}
           onClose={closeModals}
           onSave={saveUser}
-          fields={["name", "email", "password", "role", "tech", "experience", "dob", "currency", "ptoLimit", "workingDays"]}
+          fields={[
+            "name",
+            "email",
+            "password",
+            "role",
+            "tech",
+            "experience",
+            "dob",
+            "currency",
+            "ptoLimit",
+            "workingDays",
+          ]}
           labels={{
             name: "Full Name",
             email: "Email",
@@ -193,10 +204,11 @@ const Users = () => {
             workingDays: "Working Days",
           }}
           renderCustomField={(field, value, onChange) => {
+            // Role dropdown
             if (field === "role") {
               return (
                 <select
-                  value={value}
+                  value={value || ""}
                   onChange={(e) => onChange(field, e.target.value)}
                   className="w-full border rounded px-3 py-2 bg-gray-100"
                 >
@@ -207,12 +219,41 @@ const Users = () => {
                 </select>
               );
             }
+
+            // Currency dropdown (INR/USD)
+            if (field === "currency") {
+              return (
+                <select
+                  value={value || ""}
+                  onChange={(e) => onChange(field, e.target.value)}
+                  className="w-full border rounded px-3 py-2 bg-gray-100"
+                >
+                  <option value="">Select Currency</option>
+                  <option value="INR">INR</option>
+                  <option value="USD">USD</option>
+                </select>
+              );
+            }
+
+            // Number fields (PTO Limit, Working Days)
+            if (field === "ptoLimit" || field === "workingDays") {
+              return (
+                <input
+                  type="number"
+                  value={value || ""}
+                  onChange={(e) => onChange(field, e.target.value)}
+                  className="w-full border rounded px-3 py-2 bg-gray-100"
+                  min="0"
+                />
+              );
+            }
+
             return null;
           }}
         />
-
-
       )}
+
+
 
       {showPermissionModal && selectedUser && (
         <PermissionModal

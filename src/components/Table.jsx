@@ -16,9 +16,14 @@ const Table = ({ headers = [], rows = [] }) => {
     setSortConfig({ column: columnIndex, direction });
   };
 
+  const normalizeValue = (value) => {
+    if (value === null || value === undefined) return "";
+    return value.toString().toLowerCase();
+  };
+
   const filteredRows = useMemo(() => {
     return rows.filter((row) =>
-      row.some((cell) => cell.toString().toLowerCase().includes(search.toLowerCase()))
+      row.some((cell) => normalizeValue(cell).includes(search.toLowerCase()))
     );
   }, [rows, search]);
 
@@ -67,7 +72,11 @@ const Table = ({ headers = [], rows = [] }) => {
                   <div className="flex items-center gap-1">
                     {header}
                     {sortConfig.column === idx ? (
-                      sortConfig.direction === "asc" ? <FaSortUp /> : <FaSortDown />
+                      sortConfig.direction === "asc" ? (
+                        <FaSortUp />
+                      ) : (
+                        <FaSortDown />
+                      )
                     ) : (
                       <FaSort className="text-gray-400" />
                     )}

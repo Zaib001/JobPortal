@@ -119,31 +119,34 @@ const Submissions = () => {
   };
 
   const handleExcelUpload = async (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = async (evt) => {
-      const data = new Uint8Array(evt.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+  const file = e.target.files[0];
+  const reader = new FileReader();
+  reader.onload = async (evt) => {
+    const data = new Uint8Array(evt.target.result);
+    const workbook = XLSX.read(data, { type: "array" });
+    const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
-      const mapped = sheet.map((row) => ({
-        candidate: row.Candidate,
-        client: row.Client,
-        vendor: row.Vendor,
-        date: row.Date,
-        notes: row.Notes || "",
-      }));
+    const mapped = sheet.map((row) => ({
+      candidate: row.Candidate,  // Name or other identifiers for candidate
+      recruiter: row.Recruiter,  // Recruiter name
+      client: row.Client,  // Client name
+      vendor: row.Vendor,  // Vendor name
+      date: row.Date,  // Submission date
+      notes: row.Notes || "",  // Notes field
+      // Extra fields can be added here
+    }));
 
-      try {
-        await API.post("/api/recruiter/submissions/bulk", { submissions: mapped });
-        toast.success("Bulk imported successfully");
-        fetchSubmissions();
-      } catch {
-        toast.error("Bulk import failed");
-      }
-    };
-    reader.readAsArrayBuffer(file);
+    try {
+      await API.post("/api/recruiter/submissions/bulk", { submissions: mapped });
+      toast.success("Bulk imported successfully");
+      fetchSubmissions();
+    } catch (err) {
+      toast.error("Bulk import failed");
+    }
   };
+  reader.readAsArrayBuffer(file);
+};
+
 
   return (
     <div className="space-y-6">
